@@ -63,32 +63,37 @@ class GeminiEmbedder:
     def _call_gemini_batch_sync(self, texts: List[str]) -> List[List[float]]:
         if not self.api_key or not texts:
             return [self._fallback_vector(t) for t in texts]
-        try:
-            import httpx
-            batch_url = f"{self.batch_url}?key={self.api_key}"
-            requests_payload = [
-                {
-                    "model": f"models/{self.MODEL_NAME}",
-                    "content": {"parts": [{"text": t[:8000]}]}
-                }
-                for t in texts
-            ]
-            response = httpx.post(
-                batch_url,
-                json={"requests": requests_payload},
-                timeout=15.0
-            )
-            response.raise_for_status()
-            embeddings = response.json().get("embeddings", [])
-            result = []
-            for emb in embeddings:
-                values = emb.get("values", [])
-                norm = sum(x * x for x in values) ** 0.5
-                result.append([x / norm for x in values] if norm > 0 else values)
-            return result
-        except Exception as e:
-            logger.warning(f"Gemini batch embed API error, using fallback: {e}")
-            return [self._fallback_vector(t) for t in texts]
+        for attempt in range(2):
+            try:
+                import httpx
+                import time
+                batch_url = f"{self.batch_url}?key={self.api_key}"
+                requests_payload = [
+                    {
+                        "model": f"models/{self.MODEL_NAME}",
+                        "content": {"parts": [{"text": t[:8000]}]}
+                    }
+                    for t in texts
+                ]
+                response = httpx.post(
+                    batch_url,
+                    json={"requests": requests_payload},
+                    timeout=25.0
+                )
+                response.raise_for_status()
+                embeddings = response.json().get("embeddings", [])
+                result = []
+                for emb in embeddings:
+                    values = emb.get("values", [])
+                    norm = sum(x * x for x in values) ** 0.5
+                    result.append([x / norm for x in values] if norm > 0 else values)
+                return result
+            except Exception as e:
+                if attempt == 0:
+                    time.sleep(1.0)
+                    continue
+                logger.warning(f"Gemini batch embed API error after retry, using fallback: {e}")
+                return [self._fallback_vector(t) for t in texts]
 
     def embed_text(self, text: str) -> List[float]:
         return self._call_gemini_sync(text)
@@ -96,11 +101,15 @@ class GeminiEmbedder:
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
         if not texts:
             return []
+        import concurrent.futures
+        batch_size = 50
+        batches = [texts[i:i + batch_size] for i in range(0, len(texts), batch_size)]
+        
         all_embeddings = []
-        batch_size = 20
-        for i in range(0, len(texts), batch_size):
-            batch = texts[i:i + batch_size]
-            all_embeddings.extend(self._call_gemini_batch_sync(batch))
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+            results = list(executor.map(self._call_gemini_batch_sync, batches))
+            for res in results:
+                all_embeddings.extend(res)
         return all_embeddings
 
 

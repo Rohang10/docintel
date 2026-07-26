@@ -132,7 +132,10 @@ export default function DocumentVaultPage() {
     }
   };
 
-  const filteredDocs = documents.filter(doc => {
+  const processingDocs = documents.filter(doc => ['pending', 'extracting', 'masking', 'chunking', 'embedding'].includes(doc.status));
+  const completedDocs = documents.filter(doc => !['pending', 'extracting', 'masking', 'chunking', 'embedding'].includes(doc.status));
+
+  const filteredDocs = completedDocs.filter(doc => {
     const matchesSearch = doc.name.toLowerCase().includes(search.toLowerCase());
     const matchesFilter = statusFilter === 'all' || doc.status === statusFilter;
     return matchesSearch && matchesFilter;
@@ -200,9 +203,35 @@ export default function DocumentVaultPage() {
         </div>
       </div>
 
+      {/* Background Processing Banner - Prevents card flickering in the grid! */}
+      {processingDocs.length > 0 && (
+        <div className="glass p-4 rounded-2xl border border-blue-500/30 bg-blue-500/10 flex items-center justify-between gap-4 shadow-sm animate-pulse">
+          <div className="flex items-center gap-3">
+            <RefreshCw className="w-5 h-5 text-blue-500 dark:text-cyan-400 animate-spin shrink-0" />
+            <div>
+              <h4 className="text-sm font-bold dark:text-white text-slate-900">
+                Processing {processingDocs.length} document{processingDocs.length > 1 ? 's' : ''} in background...
+              </h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">
+                Extracting text, masking PII, and generating 3072-dim gemini-embedding-001 vectors. Will appear in grid when ready!
+              </p>
+            </div>
+          </div>
+          <span className="text-[11px] font-mono font-semibold px-3 py-1 rounded-full bg-blue-500/20 text-blue-600 dark:text-cyan-400 shrink-0">
+            {processingDocs[0].status.toUpperCase()}
+          </span>
+        </div>
+      )}
+
       {/* Document Grid */}
       {loading ? (
         <div className="py-20 text-center text-xs text-slate-500 dark:text-slate-400 font-mono animate-pulse">Loading secure document vault...</div>
+      ) : filteredDocs.length === 0 && processingDocs.length > 0 ? (
+        <div className="py-16 text-center border border-dashed dark:border-slate-800 border-slate-300 rounded-2xl glass-card">
+          <RefreshCw className="w-10 h-10 text-blue-600 dark:text-cyan-400 animate-spin mx-auto mb-3 opacity-80" />
+          <h3 className="text-base font-bold dark:text-white text-slate-900 mb-1">Your document is being secured and embedded</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Please wait a few seconds while our AI generates 3072-dim vector embeddings...</p>
+        </div>
       ) : filteredDocs.length === 0 ? (
         <div className="py-20 text-center border border-dashed dark:border-slate-800 border-slate-300 rounded-2xl glass-card">
           <FileText className="w-12 h-12 text-blue-600 dark:text-cyan-400 opacity-50 mx-auto mb-3" />
