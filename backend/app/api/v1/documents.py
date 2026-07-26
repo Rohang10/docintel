@@ -54,9 +54,9 @@ async def process_document_pipeline(document_id: str, tenant_id: str, file_path_
             doc.status = "embedding"
             await db.commit()
 
-            # Batch encode all chunk vectors via Gemini API (non-blocking)
+            # Batch encode all chunk vectors via native async Gemini API (zero thread blocking)
             chunk_texts = [c["content"] for c in raw_chunks]
-            vecs = await asyncio.to_thread(embedder.embed_documents, chunk_texts)
+            vecs = await embedder.aembed_documents(chunk_texts)
 
             chunk_objs = []
             for idx, c in enumerate(raw_chunks):
