@@ -149,7 +149,7 @@ export default function QueryPage() {
                 Ask anything about your uploaded documents
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mb-8 leading-relaxed font-sans">
-                Queries are processed with 768-dim Gemini text-embedding-004 dense retrieval and Google Gemini / Groq streaming responses.
+                Queries are processed with 3072-dim gemini-embedding-001 dense retrieval and Google Gemini / Groq streaming responses.
               </p>
 
               {/* Sample Queries */}

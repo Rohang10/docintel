@@ -76,7 +76,7 @@ class GeminiEmbedder:
             response = httpx.post(
                 batch_url,
                 json={"requests": requests_payload},
-                timeout=60.0
+                timeout=15.0
             )
             response.raise_for_status()
             embeddings = response.json().get("embeddings", [])
@@ -97,7 +97,7 @@ class GeminiEmbedder:
         if not texts:
             return []
         all_embeddings = []
-        batch_size = 100
+        batch_size = 20
         for i in range(0, len(texts), batch_size):
             batch = texts[i:i + batch_size]
             all_embeddings.extend(self._call_gemini_batch_sync(batch))

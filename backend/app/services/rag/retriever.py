@@ -24,7 +24,7 @@ class VectorRetriever:
         query: str,
         document_ids: Optional[List[str]] = None,
         top_k: int = 5,
-        threshold: float = 0.3
+        threshold: float = 0.15
     ) -> List[Dict[str, Any]]:
         query_vec = await asyncio.to_thread(embedder.embed_text, query)
         
@@ -56,6 +56,10 @@ class VectorRetriever:
             
         # Sort by highest similarity
         scored_chunks.sort(key=lambda x: x["similarity"], reverse=True)
-        return [c for c in scored_chunks if c["similarity"] >= threshold][:top_k]
+        filtered = [c for c in scored_chunks if c["similarity"] >= threshold][:top_k]
+        if not filtered and scored_chunks:
+            # Fallback: if no chunks meet threshold, return top 3 highest-scoring chunks so LLM has context
+            return scored_chunks[:min(3, top_k)]
+        return filtered
 
 retriever = VectorRetriever()

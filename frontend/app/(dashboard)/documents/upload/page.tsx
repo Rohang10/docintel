@@ -19,7 +19,7 @@ export default function DocumentUploadPage() {
           <span>Upload Document</span>
         </h1>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-mono">
-          Files are virus-scanned, masked for PII entities, and embedded into Gemini text-embedding-004 768-dim vector chunks.
+          Files are virus-scanned, masked for PII entities, and embedded into 3072-dim gemini-embedding-001 vector chunks.
         </p>
       </div>
 
@@ -31,7 +31,7 @@ export default function DocumentUploadPage() {
         </h4>
         <ul className="list-disc list-inside space-y-1.5 dark:text-slate-400 text-slate-600 leading-relaxed text-xs">
           <li>PII Entity Masking replaces names, emails, phone numbers, cards, SSN, PAN, Aadhaar with placeholders automatically.</li>
-          <li>Embeddings are calculated using <strong className="text-blue-600 dark:text-cyan-400">Gemini text-embedding-004</strong> API (768-dimensional vectors, zero local RAM usage).</li>
+          <li>Embeddings are calculated using <strong className="text-blue-600 dark:text-cyan-400">gemini-embedding-001</strong> API (3072-dimensional vectors, zero local RAM usage).</li>
           <li>Original file content is stored encrypted at rest with strict PostgreSQL Row-Level Security boundaries.</li>
         </ul>
       </div>

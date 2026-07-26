@@ -29,7 +29,7 @@ export function UploadDropzone() {
       const doc = await uploadDocument(file);
       setUploadedFile({ name: doc.name, size: doc.file_size, id: doc.id });
       setToast({
-        message: "Success! Document processed and Gemini text-embedding-004 vector pipeline ready!",
+        message: "Success! Document processed and 3072-dim gemini-embedding-001 vector pipeline ready!",
         type: 'success'
       });
       setTimeout(() => {
@@ -79,7 +79,7 @@ export function UploadDropzone() {
         {uploading ? (
           <div>
             <h4 className="text-lg font-bold dark:text-white text-slate-900 mb-1 font-display">Processing Document...</h4>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">Extracting text, masking PII, and generating Gemini 768-dim embeddings</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">Extracting text, masking PII, and generating 3072-dim gemini-embedding-001 embeddings</p>
           </div>
         ) : uploadedFile ? (
           <div>

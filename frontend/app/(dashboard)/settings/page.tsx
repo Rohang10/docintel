@@ -39,8 +39,8 @@ export default function SettingsPage() {
           <div className="w-12 h-12 rounded-xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-600 dark:text-teal-400 mb-4">
             <Database className="w-6 h-6" />
           </div>
-          <h3 className="font-display text-lg font-bold dark:text-white text-slate-900 mb-1">Vector DB (768-dim)</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-sans">Gemini text-embedding-004 API vector store active with pgvector HNSW index.</p>
+          <h3 className="font-display text-lg font-bold dark:text-white text-slate-900 mb-1">Vector DB (3072-dim)</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-sans">gemini-embedding-001 API vector store active with tenant-scoped pgvector index.</p>
         </div>
 
         <div className="glass-card p-6 border dark:border-slate-800 border-slate-200/90 shadow-sm">

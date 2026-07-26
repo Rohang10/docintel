@@ -69,7 +69,7 @@ export function Sidebar() {
             </span>
           </div>
           <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-sans">
-            Gemini text-embedding-004 dense vectors & Presidio PII anonymization active.
+            Gemini 3072-dim gemini-embedding-001 dense vectors & Presidio PII anonymization active.
           </p>
         </div>
       </div>

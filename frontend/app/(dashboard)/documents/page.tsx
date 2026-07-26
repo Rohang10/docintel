@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { FileText, Upload, Trash2, Search, Eye, Filter, RefreshCw, CheckCircle2, Loader2 } from 'lucide-react';
+import { FileText, Upload, Trash2, Search, Eye, Filter, RefreshCw, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fetchDocuments, deleteDocument, DocumentItem } from '@/lib/api/documents';
 import { formatBytes, formatDate } from '@/lib/utils';
@@ -13,7 +13,8 @@ export default function DocumentVaultPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [toast, setToast] = useState<{ message: string; type: 'info' | 'success' } | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'info' | 'success' | 'error' } | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const loadDocs = async () => {
     setLoading(true);
@@ -81,7 +82,7 @@ export default function DocumentVaultPage() {
     loadDocs();
     if (typeof window !== 'undefined' && window.location.search.includes('toast=success')) {
       setToast({
-        message: "Success! Document processed and Gemini text-embedding-004 vector pipeline ready!",
+        message: "Success! Document processed and 3072-dim gemini-embedding-001 vector pipeline ready!",
         type: 'success'
       });
       const timer = setTimeout(() => setToast(null), 5000);
@@ -96,11 +97,11 @@ export default function DocumentVaultPage() {
         message: "Processing in vault... Please wait, it will be available shortly!",
         type: 'info'
       });
-      const interval = setInterval(loadDocs, 2000);
+      const interval = setInterval(loadDocs, 1000);
       return () => clearInterval(interval);
     } else if (toast?.type === 'info') {
       setToast({
-        message: "Success! Document processed and Gemini text-embedding-004 vector pipeline ready!",
+        message: "Success! Document processed and 3072-dim gemini-embedding-001 vector pipeline ready!",
         type: 'success'
       });
       const timer = setTimeout(() => setToast(null), 5000);
@@ -108,13 +109,26 @@ export default function DocumentVaultPage() {
     }
   }, [documents]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this document and its 768-dim vector chunks?')) return;
+  const handleDeleteConfirm = async (id: string, name: string) => {
+    setDeletingId(null);
+    setToast({
+      message: `Deleting "${name}" and purging 3072-dim vector chunks from vault...`,
+      type: 'info'
+    });
     try {
       await deleteDocument(id);
       setDocuments(prev => prev.filter(d => d.id !== id));
-    } catch (e) {
-      alert('Delete failed');
+      setToast({
+        message: `Successfully deleted "${name}" and removed all 3072-dim vector chunks!`,
+        type: 'success'
+      });
+      setTimeout(() => setToast(null), 4000);
+    } catch (e: any) {
+      setToast({
+        message: `Failed to delete "${name}". Please try again.`,
+        type: 'error'
+      });
+      setTimeout(() => setToast(null), 4000);
     }
   };
 
@@ -136,7 +150,7 @@ export default function DocumentVaultPage() {
             <span>Document Vault</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-mono">
-            Enterprise document repository with Presidio PII Masking and Gemini text-embedding-004 Vector Embeddings
+            Enterprise document repository with Presidio PII Masking and 3072-dim gemini-embedding-001 Vector Embeddings
           </p>
         </div>
 
@@ -227,13 +241,30 @@ export default function DocumentVaultPage() {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => handleDelete(doc.id)}
-                    className="text-slate-400 hover:text-rose-500 p-1.5 rounded-lg hover:bg-rose-500/10 transition-colors"
-                    title="Delete document"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {deletingId === doc.id ? (
+                    <div className="flex items-center gap-1.5 animate-in fade-in duration-200">
+                      <button
+                        onClick={() => setDeletingId(null)}
+                        className="px-2 py-1 text-[11px] font-mono font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => handleDeleteConfirm(doc.id, doc.name)}
+                        className="px-2.5 py-1 text-[11px] font-mono font-bold rounded-lg bg-rose-500 text-white hover:bg-rose-600 shadow-sm shadow-rose-500/20 transition-all flex items-center gap-1"
+                      >
+                        Confirm Delete
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setDeletingId(doc.id)}
+                      className="text-slate-400 hover:text-rose-500 p-1.5 rounded-lg hover:bg-rose-500/10 transition-colors"
+                      title="Delete document"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
 
                 <ProcessingStatus status={doc.status} chunkCount={doc.chunk_count} piiEntities={doc.pii_entities} />
@@ -259,15 +290,21 @@ export default function DocumentVaultPage() {
           <div className={`p-4 rounded-2xl shadow-2xl border backdrop-blur-xl flex items-center gap-3.5 text-xs font-semibold ${
             toast.type === 'success'
               ? 'bg-teal-600/95 dark:bg-teal-500/95 text-white border-teal-400 shadow-teal-500/30'
+              : toast.type === 'error'
+              ? 'bg-rose-600/95 dark:bg-rose-500/95 text-white border-rose-400 shadow-rose-500/30'
               : 'bg-blue-600/95 dark:bg-blue-500/95 text-white border-blue-400 shadow-blue-600/30'
           }`}>
             {toast.type === 'success' ? (
               <CheckCircle2 className="w-5 h-5 shrink-0" />
+            ) : toast.type === 'error' ? (
+              <AlertCircle className="w-5 h-5 shrink-0" />
             ) : (
               <Loader2 className="w-5 h-5 animate-spin shrink-0" />
             )}
             <div className="flex-1">
-              <p className="font-sans text-sm font-bold">{toast.type === 'success' ? 'Processing Success!' : 'Processing Pipeline...'}</p>
+              <p className="font-sans text-sm font-bold">
+                {toast.type === 'success' ? 'Vault Success!' : toast.type === 'error' ? 'Vault Action Failed' : 'Vault Processing...'}
+              </p>
               <p className="font-mono text-xs opacity-95 font-normal mt-0.5 leading-relaxed">{toast.message}</p>
             </div>
           </div>

@@ -43,7 +43,7 @@ export default function LandingPage() {
             transition={{ duration: 0.6 }}
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-slate-300 dark:border-slate-700 text-blue-600 dark:text-cyan-400 text-xs font-mono mb-8 shadow-sm">
-              <ShieldCheck className="w-4 h-4 text-teal-500 animate-pulse" /> Gemini text-embedding-004 Vectors + Presidio PII Masking
+              <ShieldCheck className="w-4 h-4 text-teal-500 animate-pulse" /> 3072-dim gemini-embedding-001 Vectors + Presidio PII Masking
             </div>
 
             <h1 className="font-display text-4xl sm:text-6xl font-bold tracking-tight dark:text-white text-slate-900 max-w-4xl mx-auto leading-[1.15] mb-6">
@@ -94,13 +94,13 @@ export default function LandingPage() {
                 <Database className="w-6 h-6" />
               </div>
               <h3 className="font-display text-xl font-bold dark:text-white text-slate-900 mb-2 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
-                Gemini text-embedding-004 Vector RAG
+                gemini-embedding-001 Vector RAG
               </h3>
               <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-4">
-                Uses 768-dimensional dense embeddings for high precision document chunk retrieval and token streaming.
+                Uses 3072-dimensional dense embeddings for high precision document chunk retrieval and token streaming.
               </p>
               <div className="flex items-center text-teal-600 dark:text-teal-400 font-medium text-xs font-mono group-hover:translate-x-1 transition-transform">
-                <span>768-DIM VECTORS</span>
+                <span>3072-DIM VECTORS</span>
                 <ArrowRight className="w-3.5 h-3.5 ml-1" />
               </div>
             </motion.div>
@@ -142,8 +142,8 @@ export default function LandingPage() {
 
             <div className="glass-card p-6 border dark:border-slate-800 border-slate-200/90 text-center relative shadow-sm">
               <div className="w-10 h-10 rounded-full bg-teal-500 text-white font-bold text-sm flex items-center justify-center mx-auto mb-4 font-mono shadow-md shadow-teal-500/40 border border-teal-400">2</div>
-              <h4 className="font-display font-bold dark:text-white text-slate-900 text-base mb-2">Gemini Embed API</h4>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Stores 768-dim dense vectors via Gemini text-embedding-004 API in pgvector under PostgreSQL Row-Level Security boundaries.</p>
+              <h4 className="font-display font-bold dark:text-white text-slate-900 text-base mb-2">gemini-embedding-001 API</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Stores 3072-dim dense vectors via gemini-embedding-001 API in pgvector under PostgreSQL Row-Level Security boundaries.</p>
             </div>
 
             <div className="glass-card p-6 border dark:border-slate-800 border-slate-200/90 text-center relative shadow-sm">
@@ -157,7 +157,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="py-8 border-t dark:border-slate-800 border-slate-200 px-8 text-center text-xs text-slate-500 dark:text-slate-400 font-mono">
-        Docintel Secure RAG Platform © 2026 — Multi-Tenant Architecture with Gemini text-embedding-004 & Presidio PII Masking
+        Docintel Secure RAG Platform © 2026 — Multi-Tenant Architecture with 3072-dim gemini-embedding-001 & Presidio PII Masking
       </footer>
     </div>
   );

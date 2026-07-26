@@ -27,9 +27,14 @@ async def process_document_pipeline(document_id: str, tenant_id: str, file_path_
             return
 
         try:
+            doc.status = "extracting"
+            await db.commit()
+
             # Step 1: Text extraction
             pages = await extractor.extract(Path(file_path_str), file_type)
             doc.page_count = len(pages)
+            doc.status = "masking"
+            await db.commit()
 
             # Step 2: PII Masking & Semantic Chunking
             masked_pages = []
@@ -40,10 +45,14 @@ async def process_document_pipeline(document_id: str, tenant_id: str, file_path_
                 masked_pages.append({"page": p["page"], "text": masked_text})
 
             doc.pii_entities = sorted(list(detected_pii_entities))
+            doc.status = "chunking"
+            await db.commit()
 
             # Step 3: Chunking & gemini-embedding-001 Batch Embedding
             raw_chunks = chunker.chunk_pages(masked_pages)
             doc.chunk_count = len(raw_chunks)
+            doc.status = "embedding"
+            await db.commit()
 
             # Batch encode all chunk vectors via Gemini API (non-blocking)
             chunk_texts = [c["content"] for c in raw_chunks]

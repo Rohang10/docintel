@@ -28,7 +28,7 @@ class RAGGenerator:
         context_str = self._format_context(chunks)
         prompt = f"{SYSTEM_PROMPT}\n\nContext:\n{context_str}\n\nQuestion: {query}\n\nAnswer:"
 
-        # Try Groq first (primary — confirmed low-latency & free)
+        # 1. Try Groq Primary (llama-3.3-70b-versatile)
         if self.groq_key and self.groq_key != "your-groq-api-key":
             try:
                 from langchain_groq import ChatGroq
@@ -36,41 +36,99 @@ class RAGGenerator:
                     model="llama-3.3-70b-versatile",
                     groq_api_key=self.groq_key,
                     temperature=0.1,
-                    streaming=True
+                    streaming=True,
+                    max_retries=1
                 )
+                tokens_yielded = False
                 async for chunk in llm.astream(prompt):
                     token = chunk.content if hasattr(chunk, "content") else str(chunk)
                     if token:
+                        tokens_yielded = True
                         yield token
-                return
+                if tokens_yielded:
+                    return
             except Exception as e:
-                logger.error(f"Groq LLM stream failed: {e}. Falling back to Gemini.")
+                logger.error(f"Groq 70B stream failed: {e}. Trying Groq 8B instant...")
+                if tokens_yielded:
+                    return
 
-        # Try Google Gemini as fallback
+            # 1b. Try Groq Ultra-Fast Fallback (llama-3.1-8b-instant)
+            try:
+                from langchain_groq import ChatGroq
+                llm_fast = ChatGroq(
+                    model="llama-3.1-8b-instant",
+                    groq_api_key=self.groq_key,
+                    temperature=0.1,
+                    streaming=True,
+                    max_retries=1
+                )
+                tokens_yielded = False
+                async for chunk in llm_fast.astream(prompt):
+                    token = chunk.content if hasattr(chunk, "content") else str(chunk)
+                    if token:
+                        tokens_yielded = True
+                        yield token
+                if tokens_yielded:
+                    return
+            except Exception as e:
+                logger.error(f"Groq 8B stream failed: {e}. Falling back to Google Gemini...")
+                if tokens_yielded:
+                    return
+
+        # 2. Try Google Gemini Primary (gemini-2.0-flash)
         if self.gemini_key and self.gemini_key != "your-google-gemini-api-key":
             try:
                 from langchain_google_genai import ChatGoogleGenerativeAI
-                llm = ChatGoogleGenerativeAI(
+                llm_gemini = ChatGoogleGenerativeAI(
                     model="gemini-2.0-flash",
                     google_api_key=self.gemini_key,
                     temperature=0.1,
-                    streaming=True
+                    streaming=True,
+                    max_retries=1
                 )
-                async for chunk in llm.astream(prompt):
+                tokens_yielded = False
+                async for chunk in llm_gemini.astream(prompt):
                     token = chunk.content if hasattr(chunk, "content") else str(chunk)
                     if token:
+                        tokens_yielded = True
                         yield token
-                return
+                if tokens_yielded:
+                    return
             except Exception as e:
-                logger.error(f"Gemini LLM stream failed: {e}. Using local fallback generator.")
+                logger.error(f"Gemini 2.0 Flash stream failed: {e}. Trying Gemini 1.5 Flash...")
+                if tokens_yielded:
+                    return
 
-        # Final intelligent fallback — always produces an answer
-        logger.warning("All LLM providers failed or unavailable. Using local fallback.")
+            # 2b. Try Google Gemini Stable Fallback (gemini-1.5-flash)
+            try:
+                from langchain_google_genai import ChatGoogleGenerativeAI
+                llm_gemini_stable = ChatGoogleGenerativeAI(
+                    model="gemini-1.5-flash",
+                    google_api_key=self.gemini_key,
+                    temperature=0.1,
+                    streaming=True,
+                    max_retries=1
+                )
+                tokens_yielded = False
+                async for chunk in llm_gemini_stable.astream(prompt):
+                    token = chunk.content if hasattr(chunk, "content") else str(chunk)
+                    if token:
+                        tokens_yielded = True
+                        yield token
+                if tokens_yielded:
+                    return
+            except Exception as e:
+                logger.error(f"Gemini 1.5 Flash stream failed: {e}. Using local generator fallback.")
+                if tokens_yielded:
+                    return
+
+        # 3. Final local fallback generator (Always guarantees an answer without breaking!)
+        logger.warning("All LLM cloud providers failed or unavailable. Using local fallback generator.")
         answer = self._generate_local_fallback(query, chunks)
         words = answer.split(" ")
         for i, word in enumerate(words):
             yield word + (" " if i < len(words) - 1 else "")
-            await asyncio.sleep(0.04)
+            await asyncio.sleep(0.02)
 
     def _format_context(self, chunks: List[Dict[str, Any]]) -> str:
         if not chunks:
