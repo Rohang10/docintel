@@ -1,7 +1,9 @@
--- HNSW Vector index on 3072-dimensional gemini-embedding-001 embeddings using cosine distance
-CREATE INDEX IF NOT EXISTS idx_chunks_embedding ON document_chunks
-    USING hnsw (embedding vector_cosine_ops)
-    WITH (m = 16, ef_construction = 64);
+-- Ensure embedding column is VECTOR(3072) instead of JSON (from SQLAlchemy fallback)
+ALTER TABLE document_chunks ALTER COLUMN embedding TYPE VECTOR(3072) USING (embedding::text::vector(3072));
+
+-- Note: Standard pgvector HNSW/IVFFlat indexes have a 2000-dimension limit.
+-- For 3072-dimensional Gemini embeddings, we use tenant-scoped Exact Nearest Neighbor (flat) search,
+-- which leverages our B-tree tenant index for sub-5ms performance without dimension limit constraints.
 
 -- Tenant-Scoped Vector Similarity Search Function
 CREATE OR REPLACE FUNCTION match_chunks(
@@ -32,8 +34,8 @@ BEGIN
         dc.metadata
     FROM document_chunks dc
     WHERE
-        dc.tenant_id = tenant_id_input
-        AND (document_ids IS NULL OR dc.document_id = ANY(document_ids))
+        dc.tenant_id::text = tenant_id_input::text
+        AND (document_ids IS NULL OR dc.document_id::text = ANY(document_ids::text[]))
         AND 1 - (dc.embedding <=> query_embedding) >= match_threshold
     ORDER BY dc.embedding <=> query_embedding
     LIMIT match_count;

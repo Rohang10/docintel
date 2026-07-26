@@ -7,9 +7,9 @@ ALTER TABLE query_sessions ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "tenant_isolation_documents" ON documents;
 CREATE POLICY "tenant_isolation_documents" ON documents
     FOR ALL USING (
-        tenant_id = (
-            SELECT tenant_id FROM user_profiles
-            WHERE id = auth.uid()
+        tenant_id::text = (
+            SELECT tenant_id::text FROM user_profiles
+            WHERE id::text = auth.uid()::text
         )
     );
 
@@ -17,9 +17,9 @@ CREATE POLICY "tenant_isolation_documents" ON documents
 DROP POLICY IF EXISTS "tenant_isolation_chunks" ON document_chunks;
 CREATE POLICY "tenant_isolation_chunks" ON document_chunks
     FOR ALL USING (
-        tenant_id = (
-            SELECT tenant_id FROM user_profiles
-            WHERE id = auth.uid()
+        tenant_id::text = (
+            SELECT tenant_id::text FROM user_profiles
+            WHERE id::text = auth.uid()::text
         )
     );
 
@@ -27,8 +27,8 @@ CREATE POLICY "tenant_isolation_chunks" ON document_chunks
 DROP POLICY IF EXISTS "tenant_isolation_sessions" ON query_sessions;
 CREATE POLICY "tenant_isolation_sessions" ON query_sessions
     FOR ALL USING (
-        tenant_id = (
-            SELECT tenant_id FROM user_profiles
-            WHERE id = auth.uid()
+        tenant_id::text = (
+            SELECT tenant_id::text FROM user_profiles
+            WHERE id::text = auth.uid()::text
         )
     );
