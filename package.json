@@ -1,0 +1,15 @@
+{
+  "name": "docintel-project",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev:frontend": "npm run dev --prefix frontend",
+    "build:frontend": "npm run build --prefix frontend",
+    "start:frontend": "npm run start --prefix frontend",
+    "dev:backend": "cd backend && python -m uvicorn app.main:app --reload --port 8000",
+    "test:backend": "cd backend && pytest"
+  },
+  "workspaces": [
+    "frontend"
+  ]
+}
