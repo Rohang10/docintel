@@ -80,9 +80,30 @@ async def process_document_pipeline(document_id: str, tenant_id: str, file_path_
 
         except Exception as e:
             logger.error(f"Error processing document {document_id}: {e}")
-            doc.status = "failed"
-            doc.error_message = str(e)
-            await db.commit()
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            try:
+                doc.status = "failed"
+                doc.error_message = str(e)[:500]
+                await db.commit()
+            except Exception as commit_err:
+                logger.error(f"Failed to commit failed status for document {document_id}: {commit_err}")
+                try:
+                    await db.rollback()
+                except Exception:
+                    pass
+                try:
+                    from sqlalchemy import update
+                    await db.execute(
+                        update(Document)
+                        .where(Document.id == document_id)
+                        .values(status="failed", error_message=str(e)[:500])
+                    )
+                    await db.commit()
+                except Exception as final_err:
+                    logger.error(f"Final fallback status update failed: {final_err}")
 
 @router.post("/", response_model=DocumentResponse, status_code=status.HTTP_202_ACCEPTED)
 async def upload_document(

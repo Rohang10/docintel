@@ -140,9 +140,14 @@ class GeminiEmbedder:
         import asyncio
         batch_size = 25
         batches = [texts[i:i + batch_size] for i in range(0, len(texts), batch_size)]
+        semaphore = asyncio.Semaphore(3)
+        
+        async def _bounded_batch(client, b):
+            async with semaphore:
+                return await self._call_gemini_batch_async(client, b)
         
         async with httpx.AsyncClient() as client:
-            tasks = [self._call_gemini_batch_async(client, b) for b in batches]
+            tasks = [_bounded_batch(client, b) for b in batches]
             results = await asyncio.gather(*tasks)
             
         all_embeddings = []

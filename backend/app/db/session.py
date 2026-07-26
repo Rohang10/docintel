@@ -1,4 +1,5 @@
 import logging
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from app.core.config import settings
 
@@ -39,6 +40,14 @@ try:
         future=True,
         pool_pre_ping=True if "postgresql" in db_url else False,
     )
+    if "postgresql" in db_url:
+        @event.listens_for(engine.sync_engine, "connect")
+        def register_custom_types(dbapi_connection, connection_record):
+            try:
+                from pgvector.asyncpg import register_vector
+                dbapi_connection.await_(register_vector(dbapi_connection._connection))
+            except Exception as e:
+                logger.warning(f"Failed to register pgvector codecs on asyncpg connection: {e}")
 except Exception as e:
     logger.warning(f"Failed to create engine for {db_url}: {e}. Falling back to SQLite.")
     db_url = "sqlite+aiosqlite:///./docintel.db"

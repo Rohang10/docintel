@@ -12,10 +12,10 @@ async def get_current_user_claims(token: str = Depends(oauth2_scheme)) -> Dict[s
     if not token:
         # Development fallback / anonymous mock context
         return {
-            "sub": "demo-user-123",
-            "tenant_id": "demo-tenant-456",
+            "sub": "8a70e9d5-0d1d-424b-87f4-269c2c8d1617",
+            "tenant_id": "fcff133b-5a14-4d2b-96c1-9a64d0020bc3",
             "role": "admin",
-            "email": "demo@enterprise.com"
+            "email": "test@example.com"
         }
 
     claims = decode_access_token(token)

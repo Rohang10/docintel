@@ -34,6 +34,21 @@ async def lifespan(app: FastAPI):
                 await conn.run_sync(Base.metadata.create_all)
             logger.info("Local SQLite fallback initialized.")
 
+        try:
+            from sqlalchemy import update
+            from app.models.document import Document
+            from app.db.session import AsyncSessionLocal
+            async with AsyncSessionLocal() as db:
+                await db.execute(
+                    update(Document)
+                    .where(Document.status.in_(["pending", "extracting", "masking", "chunking", "embedding"]))
+                    .values(status="failed", error_message="Server restarted while document was processing. Please delete and re-upload.")
+                )
+                await db.commit()
+            logger.info("Cleaned up orphaned processing documents from prior server sessions.")
+        except Exception as e:
+            logger.warning(f"Orphaned document cleanup skipped: {e}")
+
     asyncio.create_task(init_db_background())
     # No local embedding model to warm up — using Gemini API (zero RAM, free tier compatible)
 
