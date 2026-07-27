@@ -15,8 +15,8 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       <div>
-        <h1 className="font-display text-3xl font-bold dark:text-white text-slate-900 flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-blue-600/15 border border-blue-500/40 text-blue-600 dark:text-cyan-400">
+        <h1 className="font-display text-2xl sm:text-3xl font-bold dark:text-white text-slate-900 flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-blue-600/15 border border-blue-500/40 text-blue-600 dark:text-cyan-400 shrink-0">
             <Settings className="w-6 h-6" />
           </div>
           <span>Audit & Workspace Settings</span>
@@ -26,7 +26,7 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
         <Link href="/settings/security" className="glass-card p-6 border dark:border-slate-800 border-slate-200/90 hover:border-blue-500/60 transition-all group shadow-sm">
           <div className="w-12 h-12 rounded-xl bg-blue-600/15 border border-blue-500/30 flex items-center justify-center text-blue-600 dark:text-cyan-400 mb-4 group-hover:scale-110 transition-transform">
             <Shield className="w-6 h-6" />

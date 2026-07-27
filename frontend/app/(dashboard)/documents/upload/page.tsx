@@ -12,8 +12,8 @@ export default function DocumentUploadPage() {
         <Link href="/documents" className="inline-flex items-center gap-1.5 text-xs text-blue-600 dark:text-cyan-400 hover:underline font-mono mb-3 font-semibold">
           <ArrowLeft className="w-3.5 h-3.5" /> Back to Vault
         </Link>
-        <h1 className="font-display text-3xl font-bold dark:text-white text-slate-900 flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-blue-600/15 border border-blue-500/40 text-blue-600 dark:text-cyan-400">
+        <h1 className="font-display text-2xl sm:text-3xl font-bold dark:text-white text-slate-900 flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-blue-600/15 border border-blue-500/40 text-blue-600 dark:text-cyan-400 shrink-0">
             <Upload className="w-6 h-6" />
           </div>
           <span>Upload Document</span>

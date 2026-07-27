@@ -22,8 +22,8 @@ export default function SecurityPage() {
         <Link href="/settings" className="inline-flex items-center gap-1.5 text-xs text-blue-600 dark:text-cyan-400 hover:underline font-mono mb-4 font-semibold">
           <ArrowLeft className="w-3.5 h-3.5" /> Back to Settings
         </Link>
-        <h1 className="font-display text-3xl font-bold dark:text-white text-slate-900 flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-blue-600/15 border border-blue-500/40 text-blue-600 dark:text-cyan-400">
+        <h1 className="font-display text-2xl sm:text-3xl font-bold dark:text-white text-slate-900 flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-blue-600/15 border border-blue-500/40 text-blue-600 dark:text-cyan-400 shrink-0">
             <ShieldCheck className="w-6 h-6" />
           </div>
           <span>Security & Threat Model</span>

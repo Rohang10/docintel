@@ -12,6 +12,7 @@ export default function QueryPage() {
   const [input, setInput] = useState('');
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
+  const [showMobileScope, setShowMobileScope] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -70,18 +71,32 @@ export default function QueryPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-7.5rem)] flex flex-col md:flex-row gap-6 max-w-7xl mx-auto">
+    <div className="min-h-[calc(100vh-7.5rem)] md:h-[calc(100vh-7.5rem)] flex flex-col md:flex-row gap-4 sm:gap-6 max-w-7xl mx-auto">
+      {/* Mobile Document Scope Toggle Button */}
+      <button
+        onClick={() => setShowMobileScope(!showMobileScope)}
+        className="md:hidden w-full dark:bg-[#0B1C2D]/95 bg-white/95 backdrop-blur-xl border dark:border-slate-800 border-slate-200 p-3.5 rounded-xl flex items-center justify-between shadow-sm text-xs font-bold font-display"
+      >
+        <div className="flex items-center gap-2">
+          <FileText className="w-4 h-4 text-blue-600 dark:text-cyan-400 shrink-0" />
+          <span className="truncate">Document Scope: {selectedDocIds.length === 0 ? `All (${documents.length})` : `${selectedDocIds.length} selected`}</span>
+        </div>
+        <span className="text-[10px] text-blue-600 dark:text-cyan-400 font-mono font-normal shrink-0 ml-2">
+          {showMobileScope ? '▲ Hide Scope' : '▼ Filter Docs'}
+        </span>
+      </button>
+
       {/* Left: Document Scope Selector */}
-      <div className="w-full md:w-80 dark:bg-[#0B1C2D]/95 bg-white/95 backdrop-blur-xl border dark:border-slate-800/80 border-slate-200/90 p-5 rounded-2xl flex flex-col justify-between shrink-0 shadow-xl transition-colors duration-300">
-        <div>
+      <div className={`${showMobileScope ? 'flex' : 'hidden md:flex'} w-full md:w-80 dark:bg-[#0B1C2D]/95 bg-white/95 backdrop-blur-xl border dark:border-slate-800/80 border-slate-200/90 p-4 sm:p-5 rounded-2xl flex-col justify-between shrink-0 shadow-xl transition-colors duration-300 max-h-72 md:max-h-none overflow-hidden`}>
+        <div className="overflow-hidden flex flex-col flex-1">
           <h3 className="font-display text-base font-bold dark:text-white text-slate-900 mb-1 flex items-center gap-2">
-            <FileText className="w-4 h-4 text-blue-600 dark:text-cyan-400" /> Document Scope
+            <FileText className="w-4 h-4 text-blue-600 dark:text-cyan-400 shrink-0" /> Document Scope
           </h3>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-4 font-mono">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-4 font-mono leading-relaxed">
             Select specific documents or query all vault files (768-dim Gemini dense search).
           </p>
 
-          <div className="space-y-2 max-h-64 md:max-h-[calc(100vh-18rem)] overflow-y-auto pr-1">
+          <div className="space-y-2 overflow-y-auto pr-1 flex-1 max-h-48 md:max-h-[calc(100vh-18rem)]">
             <button
               onClick={() => setSelectedDocIds([])}
               className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-medium text-left transition-all ${
@@ -116,32 +131,32 @@ export default function QueryPage() {
           </div>
         </div>
 
-        <div className="mt-4 pt-3.5 dark:border-slate-800 border-slate-200 border-t text-[10px] text-teal-600 dark:text-teal-400 font-mono flex items-center gap-2 font-semibold">
-          <Shield className="w-3.5 h-3.5 text-teal-500 animate-pulse" /> Prompt Injection Guard Active
+        <div className="mt-4 pt-3.5 dark:border-slate-800 border-slate-200 border-t text-[10px] text-teal-600 dark:text-teal-400 font-mono flex items-center gap-2 font-semibold shrink-0">
+          <Shield className="w-3.5 h-3.5 text-teal-500 animate-pulse shrink-0" /> Prompt Injection Guard Active
         </div>
       </div>
 
       {/* Right: Streaming Chat Interface */}
-      <div className="flex-1 dark:bg-[#0B1C2D]/95 bg-white/95 backdrop-blur-xl border dark:border-slate-800/80 border-slate-200/90 rounded-2xl flex flex-col justify-between overflow-hidden relative shadow-2xl transition-colors duration-300">
+      <div className="flex-1 dark:bg-[#0B1C2D]/95 bg-white/95 backdrop-blur-xl border dark:border-slate-800/80 border-slate-200/90 rounded-2xl flex flex-col justify-between overflow-hidden relative shadow-2xl transition-colors duration-300 min-h-[450px]">
         {/* Chat Header */}
-        <div className="h-16 px-6 border-b dark:border-slate-800/80 border-slate-200/80 flex items-center justify-between dark:bg-[#071626]/90 bg-slate-50/90 backdrop-blur-md">
+        <div className="h-16 px-4 sm:px-6 border-b dark:border-slate-800/80 border-slate-200/80 flex items-center justify-between dark:bg-[#071626]/90 bg-slate-50/90 backdrop-blur-md">
           <div className="flex items-center gap-2 text-xs font-bold dark:text-white text-slate-900 font-mono">
-            <Sparkles className="w-4 h-4 text-blue-600 dark:text-cyan-400" /> RAG Streaming AI Chat
+            <Sparkles className="w-4 h-4 text-blue-600 dark:text-cyan-400 shrink-0" /> RAG Streaming AI Chat
           </div>
           {messages.length > 0 && (
             <button
               onClick={clearMessages}
-              className="text-xs text-slate-500 dark:text-slate-400 hover:text-rose-500 flex items-center gap-1.5 transition-colors font-mono font-medium"
+              className="text-xs text-slate-500 dark:text-slate-400 hover:text-rose-500 flex items-center gap-1.5 transition-colors font-mono font-medium shrink-0"
             >
-              <Trash2 className="w-3.5 h-3.5" /> Clear History
+              <Trash2 className="w-3.5 h-3.5 shrink-0" /> Clear History
             </button>
           )}
         </div>
 
         {/* Message Stream List */}
-        <div className="flex-1 p-6 overflow-y-auto space-y-6 dark:bg-[#061423]/95 bg-[#F8FAFC]/95 transition-colors duration-300">
+        <div className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-6 dark:bg-[#061423]/95 bg-[#F8FAFC]/95 transition-colors duration-300">
           {messages.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center p-6">
+            <div className="h-full flex flex-col items-center justify-center text-center p-4 sm:p-6">
               <div className="w-16 h-16 rounded-2xl bg-blue-600/15 border border-blue-500/30 flex items-center justify-center text-blue-600 dark:text-cyan-400 mb-4 shadow-xl shadow-blue-500/20">
                 <MessageSquare className="w-8 h-8" />
               </div>
@@ -173,23 +188,23 @@ export default function QueryPage() {
             messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex gap-3.5 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex gap-2 sm:gap-3.5 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {msg.role === 'assistant' && (
-                  <div className="w-9 h-9 rounded-xl bg-blue-600/15 border border-blue-500/30 flex items-center justify-center text-blue-600 dark:text-cyan-400 shrink-0 shadow-md">
-                    <Bot className="w-5 h-5" />
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-600/15 border border-blue-500/30 flex items-center justify-center text-blue-600 dark:text-cyan-400 shrink-0 shadow-md">
+                    <Bot className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                 )}
 
                 <div
-                  className={`max-w-2xl p-4 rounded-2xl text-sm leading-relaxed ${
+                  className={`max-w-xl sm:max-w-2xl p-3.5 sm:p-4 rounded-2xl text-xs sm:text-sm leading-relaxed ${
                     msg.role === 'user'
                       ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-br-none shadow-lg font-medium'
                       : 'dark:bg-[#0E2338] bg-white dark:border-slate-700/80 border-slate-200/90 dark:text-slate-100 text-slate-900 rounded-bl-none shadow-md border font-sans'
                   }`}
                 >
                   {msg.role === 'user' ? (
-                    <p className="text-sm font-medium text-white leading-relaxed">{msg.content}</p>
+                    <p className="text-xs sm:text-sm font-medium text-white leading-relaxed">{msg.content}</p>
                   ) : (
                     <>
                       <StreamingText content={msg.content} isStreaming={msg.isStreaming} />
@@ -199,7 +214,7 @@ export default function QueryPage() {
                 </div>
 
                 {msg.role === 'user' && (
-                  <div className="w-9 h-9 rounded-xl bg-blue-600 text-white border border-blue-400 flex items-center justify-center shrink-0 font-mono text-xs font-bold shadow-md">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-600 text-white border border-blue-400 flex items-center justify-center shrink-0 font-mono text-xs font-bold shadow-md">
                     <User className="w-4 h-4" />
                   </div>
                 )}
@@ -210,21 +225,21 @@ export default function QueryPage() {
         </div>
 
         {/* Input Bar */}
-        <form onSubmit={handleSubmit} className="p-4 border-t dark:border-slate-800/80 border-slate-200/80 dark:bg-[#071626]/95 bg-white/95 backdrop-blur-md transition-colors duration-300">
+        <form onSubmit={handleSubmit} className="p-3 sm:p-4 border-t dark:border-slate-800/80 border-slate-200/80 dark:bg-[#071626]/95 bg-white/95 backdrop-blur-md transition-colors duration-300">
           <div className="relative flex items-center">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask a question about selected documents..."
-              className="w-full dark:bg-[#071726] bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-xl pl-4 pr-14 py-3 text-sm dark:text-white text-slate-900 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all font-sans"
+              className="w-full dark:bg-[#071726] bg-slate-50 border dark:border-slate-700 border-slate-300 rounded-xl pl-3.5 sm:pl-4 pr-12 sm:pr-14 py-2.5 sm:py-3 text-xs sm:text-sm dark:text-white text-slate-900 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all font-sans"
             />
             <button
               type="submit"
               disabled={!input.trim() || isStreaming}
-              className="absolute right-2 p-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-all disabled:opacity-40 shadow-md shadow-blue-600/30 hover:scale-105 active:scale-95"
+              className="absolute right-1.5 sm:right-2 p-2 sm:p-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-all disabled:opacity-40 shadow-md shadow-blue-600/30 hover:scale-105 active:scale-95 shrink-0"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </div>
         </form>

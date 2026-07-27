@@ -61,14 +61,14 @@ export default function LoginPage() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4 }}
-        className="w-full max-w-md glass-card p-8 border dark:border-slate-800 border-slate-200/90 shadow-2xl relative z-10"
+        className="w-full max-w-md glass-card p-6 sm:p-8 border dark:border-slate-800 border-slate-200/90 shadow-2xl relative z-10"
       >
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-11 h-11 rounded-xl bg-blue-600/15 border border-blue-500/40 flex items-center justify-center text-blue-600 dark:text-cyan-400 font-bold shadow-lg shadow-blue-500/20">
+          <div className="w-11 h-11 rounded-xl bg-blue-600/15 border border-blue-500/40 flex items-center justify-center text-blue-600 dark:text-cyan-400 font-bold shadow-lg shadow-blue-500/20 shrink-0">
             <Lock className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="font-display text-2xl font-bold dark:text-white text-slate-900 tracking-tight">Sign In to Docintel</h2>
+            <h2 className="font-display text-xl sm:text-2xl font-bold dark:text-white text-slate-900 tracking-tight">Sign In to Docintel</h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">Tenant-Isolated Secure RAG Platform</p>
           </div>
         </div>

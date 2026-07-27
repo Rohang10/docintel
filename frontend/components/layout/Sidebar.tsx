@@ -3,8 +3,9 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Shield, FileText, MessageSquare, Settings, Lock, Upload } from 'lucide-react';
+import { Shield, FileText, MessageSquare, Settings, Lock, Upload, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useUIStore } from '@/lib/store/useUIStore';
 
 const navItems = [
   { label: 'Document Vault', href: '/documents', icon: FileText },
@@ -14,21 +15,38 @@ const navItems = [
   { label: 'Audit & Settings', href: '/settings', icon: Settings },
 ];
 
-export function Sidebar() {
+interface SidebarContentProps {
+  onItemClick?: () => void;
+  showCloseButton?: boolean;
+  onClose?: () => void;
+}
+
+function SidebarContent({ onItemClick, showCloseButton, onClose }: SidebarContentProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 dark:bg-[#091827]/95 bg-white/95 backdrop-blur-xl dark:border-slate-800/80 border-slate-200/90 border-r flex flex-col justify-between shrink-0 min-h-screen z-20 transition-colors duration-300">
+    <div className="flex flex-col justify-between h-full">
       <div>
         {/* Brand Header */}
-        <div className="h-20 px-6 flex items-center gap-3 dark:border-slate-800/80 border-slate-200/90 border-b">
-          <div className="w-10 h-10 rounded-xl bg-blue-600/15 border border-blue-500/40 flex items-center justify-center text-blue-500 shadow-md shadow-blue-500/20">
-            <Lock className="w-5 h-5" />
+        <div className="h-20 px-6 flex items-center justify-between dark:border-slate-800/80 border-slate-200/90 border-b">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-600/15 border border-blue-500/40 flex items-center justify-center text-blue-500 shadow-md shadow-blue-500/20 shrink-0">
+              <Lock className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="font-display font-bold text-xl tracking-tight dark:text-white text-slate-900 block leading-none mb-1">Docintel</span>
+              <span className="text-[10px] uppercase font-mono tracking-widest text-cyan-500 font-semibold block leading-none">Secure RAG Engine</span>
+            </div>
           </div>
-          <div>
-            <span className="font-display font-bold text-xl tracking-tight dark:text-white text-slate-900 block">Docintel</span>
-            <span className="text-[10px] uppercase font-mono tracking-widest text-cyan-500 font-semibold block">Secure RAG Engine</span>
-          </div>
+          {showCloseButton && (
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors lg:hidden"
+              title="Close navigation"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         {/* Navigation Links */}
@@ -41,6 +59,7 @@ export function Sidebar() {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={onItemClick}
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300",
                   isActive
@@ -48,8 +67,8 @@ export function Sidebar() {
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 border border-transparent"
                 )}
               >
-                <Icon className={cn("w-4 h-4", isActive ? "text-blue-600 dark:text-cyan-400" : "text-slate-500 dark:text-slate-400")} />
-                <span>{item.label}</span>
+                <Icon className={cn("w-4 h-4 shrink-0", isActive ? "text-blue-600 dark:text-cyan-400" : "text-slate-500 dark:text-slate-400")} />
+                <span className="truncate">{item.label}</span>
               </Link>
             );
           })}
@@ -73,6 +92,39 @@ export function Sidebar() {
           </p>
         </div>
       </div>
-    </aside>
+    </div>
+  );
+}
+
+export function Sidebar() {
+  const { isMobileSidebarOpen, closeMobileSidebar } = useUIStore();
+
+  return (
+    <>
+      {/* Desktop Permanent Sidebar */}
+      <aside className="hidden lg:flex w-64 dark:bg-[#091827]/95 bg-white/95 backdrop-blur-xl dark:border-slate-800/80 border-slate-200/90 border-r flex-col justify-between shrink-0 min-h-screen z-20 transition-colors duration-300">
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile Slide-over Drawer Overlay */}
+      {isMobileSidebarOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300 animate-in fade-in"
+            onClick={closeMobileSidebar}
+          />
+
+          {/* Drawer Content */}
+          <aside className="relative w-72 max-w-[85vw] dark:bg-[#091827] bg-white border-r dark:border-slate-800 border-slate-200 flex flex-col justify-between h-full z-10 shadow-2xl animate-in slide-in-from-left duration-300">
+            <SidebarContent
+              onItemClick={closeMobileSidebar}
+              showCloseButton={true}
+              onClose={closeMobileSidebar}
+            />
+          </aside>
+        </div>
+      )}
+    </>
   );
 }

@@ -58,7 +58,7 @@ export function UploadDropzone() {
     <div className="w-full max-w-2xl mx-auto">
       <div
         {...getRootProps()}
-        className={`glass-card border-2 border-dashed p-10 text-center cursor-pointer transition-all duration-300 ${
+        className={`glass-card border-2 border-dashed p-6 sm:p-10 text-center cursor-pointer transition-all duration-300 ${
           isDragActive
             ? 'border-blue-500 bg-blue-500/10 scale-[1.02] shadow-2xl'
             : 'dark:border-slate-700 border-slate-300 hover:border-blue-500/60 dark:hover:bg-slate-800/40 hover:bg-slate-100/60'
@@ -110,7 +110,7 @@ export function UploadDropzone() {
 
       {/* Floating Toaster Message */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 max-w-md animate-in fade-in slide-in-from-bottom-5 duration-300">
+        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:bottom-6 sm:right-6 z-50 max-w-md animate-in fade-in slide-in-from-bottom-5 duration-300">
           <div className={`p-4 rounded-2xl shadow-2xl border backdrop-blur-xl flex items-center gap-3.5 text-xs font-semibold ${
             toast.type === 'success'
               ? 'bg-teal-600/95 dark:bg-teal-500/95 text-white border-teal-400 shadow-teal-500/30'
