@@ -49,10 +49,25 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             logger.warning(f"Orphaned document cleanup skipped: {e}")
 
-    asyncio.create_task(init_db_background())
-    # No local embedding model to warm up — using Gemini API (zero RAM, free tier compatible)
+    # Periodic background keep-alive task for Supabase while server is running
+    async def supabase_keep_alive_loop():
+        while True:
+            try:
+                await asyncio.sleep(4 * 3600)  # Run every 4 hours
+                from sqlalchemy import text
+                from app.db.session import AsyncSessionLocal
+                async with AsyncSessionLocal() as db:
+                    await db.execute(text("SELECT 1;"))
+                logger.info("[SUPABASE KEEP-ALIVE] Background ping executed successfully. Supabase active.")
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logger.warning(f"[SUPABASE KEEP-ALIVE] Periodic ping warning: {e}")
+
+    keep_alive_task = asyncio.create_task(supabase_keep_alive_loop())
 
     yield
+    keep_alive_task.cancel()
     logger.info("Shutting down Secure Document Query System Backend...")
 
 app = FastAPI(
@@ -85,6 +100,21 @@ async def root():
         "status": "success",
         "message": "Backend connected successfully"
     }
+
+@app.get("/health")
+async def root_health():
+    return {
+        "status": "ok",
+        "service": settings.PROJECT_NAME,
+        "version": settings.VERSION
+    }
+
+@app.get("/health/db-ping")
+async def root_db_ping():
+    from app.api.v1.health import health_db_ping
+    from app.db.session import AsyncSessionLocal
+    async with AsyncSessionLocal() as db:
+        return await health_db_ping(db=db)
 
 
 if __name__ == "__main__":

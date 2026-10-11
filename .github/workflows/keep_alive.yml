@@ -1,0 +1,69 @@
+name: Keep Supabase & Render Alive
+
+on:
+  schedule:
+    # Runs every 4 hours automatically 24/7 in GitHub Cloud (works when laptop is shutdown)
+    # Cron format: min hour day month day-of-week
+    - cron: '0 */4 * * *'
+  workflow_dispatch: # Allows manual 1-click trigger from GitHub Actions tab anytime
+
+jobs:
+  keep-alive-ping:
+    name: Supabase & Render Keep-Alive
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Ping Database Keep-Alive Endpoint
+        run: |
+          echo "=========================================================="
+          echo " Starting Supabase Keep-Alive Ping from GitHub Cloud..."
+          echo " Time (UTC): $(date -u)"
+          echo "=========================================================="
+
+          # Set your Render URL via GitHub Secret RENDER_BACKEND_URL or fallback below
+          TARGET_BASE_URL="${{ secrets.RENDER_BACKEND_URL }}"
+          if [ -z "$TARGET_BASE_URL" ]; then
+            TARGET_BASE_URL="${{ vars.RENDER_BACKEND_URL }}"
+          fi
+
+          if [ -z "$TARGET_BASE_URL" ]; then
+            echo "WARNING: RENDER_BACKEND_URL secret is not set yet in GitHub Secrets."
+            echo "Please add RENDER_BACKEND_URL in GitHub: Settings > Secrets and variables > Actions."
+            echo "Attempting ping on default root URL..."
+            TARGET_BASE_URL="https://docintel-backend.onrender.com"
+          fi
+
+          # Strip any trailing slash
+          TARGET_BASE_URL="${TARGET_BASE_URL%/}"
+          PING_ENDPOINT="${TARGET_BASE_URL}/api/v1/health/db-ping"
+
+          echo "Target Endpoint: ${PING_ENDPOINT}"
+          echo "Sending HTTP GET request (allowing 90s for potential Render cold start)..."
+
+          # Use curl with max-time 90 to allow Render service to wake up from cold sleep
+          HTTP_RESPONSE=$(curl -s -S --max-time 90 --retry 3 --retry-delay 5 -w "\nHTTP_STATUS_CODE:%{http_code}\nTOTAL_TIME:%{time_total}s" "${PING_ENDPOINT}")
+          
+          CURL_EXIT_CODE=$?
+          echo "Response Output:"
+          echo "${HTTP_RESPONSE}"
+
+          if [ $CURL_EXIT_CODE -ne 0 ]; then
+            echo "ERROR: curl failed with exit code ${CURL_EXIT_CODE}"
+            exit 1
+          fi
+
+          STATUS_CODE=$(echo "${HTTP_RESPONSE}" | grep "HTTP_STATUS_CODE:" | cut -d':' -f2 | tr -d ' \r\n')
+          
+          if [ "$STATUS_CODE" -eq 200 ]; then
+            echo "=========================================================="
+            echo " SUCCESS: Supabase PostgreSQL is active! Database will not pause."
+            echo " Render backend is awake."
+            echo "=========================================================="
+            exit 0
+          else
+            echo "=========================================================="
+            echo " ERROR: Received unexpected HTTP status code ${STATUS_CODE}"
+            echo "=========================================================="
+            exit 1
+          fi

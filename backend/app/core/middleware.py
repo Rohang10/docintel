@@ -32,7 +32,7 @@ class TenantAndAuditMiddleware(BaseHTTPMiddleware):
         process_time = (time.time() - start_time) * 1000
         response.headers["X-Process-Time-Ms"] = f"{process_time:.2f}"
 
-        if not request.url.path.endswith("/health"):
+        if "/health" not in request.url.path:
             logger.info(
                 f"API Request: {request.method} {request.url.path} status={response.status_code} duration={process_time:.2f}ms",
                 extra={"tenant_id": tenant_id}
